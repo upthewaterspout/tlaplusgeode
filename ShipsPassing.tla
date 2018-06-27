@@ -2,48 +2,60 @@
 EXTENDS Integers, Sequences, TLC, FiniteSets
 CONSTANTS NUM_UPDATERS
 
-OtherUpdaters(updater) == {x \in 1..NUM_UPDATERS : x /= updater}
 
 (* --algorithm concurrentModification
 
 \*vals is a map of updater id to current value, initialized to 0
-variables vals  = [val \in 1..NUM_UPDATERS |-> 0] ;
+variables vals  = [val \in 1..NUM_UPDATERS |-> 0];
 
 \* Each updater will update it's current value to it's id
 \* And then update everyone else it it's id
 fair process updater \in 1..NUM_UPDATERS
+variable other=1;
 begin
   \* Update our value to self
   UPDATE_SELF: 
     vals[self] := self;
-  \*Update everyone else's value. Hmm, this should not be atomic but TLA+ wants me to 
-  \* Put the label outside the with
-  UPDATE_OTHERS:
-  with other \in OtherUpdaters(self) do
-    vals[other] := self;
-  end with;
+  \*Update everyone else's value.
+  UPDATE_OTHERS: while other <= NUM_UPDATERS do
+    if other = self then
+      skip;
+    else
+      vals[other] := self
+    end if;
+    other := other + 1;
+  end while;
 end process;
 
 end algorithm; *)
 \* BEGIN TRANSLATION
-VARIABLES vals, pc
+VARIABLES vals, pc, other
 
-vars == << vals, pc >>
+vars == << vals, pc, other >>
 
 ProcSet == (1..NUM_UPDATERS)
 
 Init == (* Global variables *)
         /\ vals = [val \in 1..NUM_UPDATERS |-> 0]
+        (* Process updater *)
+        /\ other = [self \in 1..NUM_UPDATERS |-> 1]
         /\ pc = [self \in ProcSet |-> "UPDATE_SELF"]
 
 UPDATE_SELF(self) == /\ pc[self] = "UPDATE_SELF"
                      /\ vals' = [vals EXCEPT ![self] = self]
                      /\ pc' = [pc EXCEPT ![self] = "UPDATE_OTHERS"]
+                     /\ other' = other
 
 UPDATE_OTHERS(self) == /\ pc[self] = "UPDATE_OTHERS"
-                       /\ \E other \in OtherUpdaters(self):
-                            vals' = [vals EXCEPT ![other] = self]
-                       /\ pc' = [pc EXCEPT ![self] = "Done"]
+                       /\ IF other[self] <= NUM_UPDATERS
+                             THEN /\ IF other[self] = self
+                                        THEN /\ TRUE
+                                             /\ vals' = vals
+                                        ELSE /\ vals' = [vals EXCEPT ![other[self]] = self]
+                                  /\ other' = [other EXCEPT ![self] = other[self] + 1]
+                                  /\ pc' = [pc EXCEPT ![self] = "UPDATE_OTHERS"]
+                             ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
+                                  /\ UNCHANGED << vals, other >>
 
 updater(self) == UPDATE_SELF(self) \/ UPDATE_OTHERS(self)
 
