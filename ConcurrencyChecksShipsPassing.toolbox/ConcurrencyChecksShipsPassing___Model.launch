@@ -19,13 +19,14 @@
 <stringAttribute key="modelBehaviorNext" value=""/>
 <stringAttribute key="modelBehaviorSpec" value="Spec"/>
 <intAttribute key="modelBehaviorSpecType" value="1"/>
-<stringAttribute key="modelBehaviorVars" value="vals, pc"/>
+<stringAttribute key="modelBehaviorVars" value="vals, other, new_value, pc"/>
 <stringAttribute key="modelComments" value=""/>
 <booleanAttribute key="modelCorrectnessCheckDeadlock" value="true"/>
 <listAttribute key="modelCorrectnessInvariants"/>
 <listAttribute key="modelCorrectnessProperties">
 <listEntry value="1Termination"/>
 <listEntry value="1EventualConsistency"/>
+<listEntry value="1IfAnyoneIsLastTheyWin"/>
 </listAttribute>
 <stringAttribute key="modelExpressionEval" value=""/>
 <stringAttribute key="modelParameterActionConstraint" value=""/>

@@ -87,6 +87,8 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 \* END TRANSLATION
 
 EventualConsistency == <>[](\A x \in 1..NUM_UPDATERS : vals[x] = vals[1])
+IfLastThenWin(u) == (pc[u] = "SET_NEW_VALUE" /\ (\A x \in ((1..NUM_UPDATERS) \ {u}) :pc[x]="Done")) ~> (\A x \in 1..NUM_UPDATERS : vals[x][1] = u)
+IfAnyoneIsLastTheyWin == \A u \in 1..NUM_UPDATERS : IfLastThenWin(u)
 =============================================================================
 
 
